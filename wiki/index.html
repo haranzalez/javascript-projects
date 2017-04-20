@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style media="screen">
+        @import url('https://fonts.googleapis.com/css?family=Roboto');
+        @import url('https://fonts.googleapis.com/css?family=Abel|Pontano+Sans|Quicksand:300|Catamaran:100');
+        * {
+            font-family: 'Roboto', sans-serif;
+            color: black;
+        }
+        
+        body {
+            background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1122px-Wikipedia-logo-v2.svg.png') !important;
+            background-repeat: no-repeat;
+            background-size: 450px;
+            background-position: 95% 500px;
+            background-attachment: fixed;
+        }
+        
+        a {
+            display: block;
+            color: black;
+            font-weight: 900;
+        }
+        
+        a:hover {
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .info {
+            transition: .5s ease-in-out;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: white;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            overflow: auto;
+        }
+        
+        #content .singleResult:hover .info {
+            opacity: 1;
+        }
+        
+        .icon-left {
+            font-size: 38pt;
+        }
+        
+        .icon-right {
+            font-size: 38pt;
+        }
+        
+        .container {
+            width: auto;
+            margin: auto;
+            text-align: center;
+            transition: .5s ease-in-out;
+            padding: 0px !important;
+            opacity: 0;
+            margin-top: 20%;
+        }
+        
+        .row {
+            text-align: center !important;
+            vertical-align: middle;
+        }
+        
+        .row div {
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .queryContainer {
+            width: 80%;
+            transition: .5s ease-in-out;
+        }
+        
+        #queryBar {
+            width: 100%;
+            height: 60px;
+            margin: auto;
+            border-top: 0;
+            border-bottom: 0;
+            border-left: 1px solid #333;
+            border-right: 1px solid #333;
+            font-size: 38pt;
+            font-family: 'Catamaran', sans-serif;
+            letter-spacing: 4px;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: lighter;
+            transition: .5s ease-in-out;
+        }
+        
+        #queryBar::-webkit-input-placeholder {
+            color: black;
+        }
+        
+        #queryBar:focus {
+            outline: none;
+        }
+        
+        .searchBar {
+            margin: 0px !important;
+            margin-bottom: 10%;
+        }
+        
+        #content {
+            margin: auto;
+        }
+        
+        #content .singleResult {
+            margin-bottom: 20px;
+            -moz-box-shadow: 3px 3px 2px 4px #ccc;
+            -webkit-box-shadow: 3px 3px 2px 4px #ccc;
+            box-shadow: 3px 3px 2px 4px #ccc;
+            margin: 30px;
+            width: 300px;
+            height: 300px;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        #content p,
+        #content h3 {
+            text-align: left;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row searchBar">
+            <div class="col-md-1"><a class="icon-left" href="#"><span class="glyphicon glyphicon-remove"></span></a></div>
+            <div class="col-md-10 queryContainer"><input type="text" name="query" id="queryBar" placeholder="Browse wikipedia"></div>
+            <div class="col-md-1"><a class="icon-right" href="#"><span class="glyphicon glyphicon-search"></span></a></div>
+        </div>
+
+        <div id="content" class="row">
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+    <script src="jquery-3.1.1.min.js" charset="utf-8"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            $('.container').animate({
+                'opacity': '1'
+            }, 500);
+
+
+            $('.icon-left').on('click', function() {
+                $('#queryBar').val('');
+                $('#content .singleResult').fadeOut();
+                $('.container').css('margin-top', '20%');
+            });
+
+            $('.icon-right').on('click', function() {
+                $('.container').css('margin-top', '3%');
+                search($('#queryBar').val());
+
+
+            });
+
+
+
+
+            function search(word) {
+                $('#content .singleResult').each(function() {
+
+                    if ($(this).text().search(new RegExp(word, 'i')) < 0) {
+                        $(this).fadeOut();
+                    } else {
+                        $(this).show();
+                    }
+                });
+
+                //API search logic
+                var wikiAPI = 'http://en.wikipedia.org/w/api.php?';
+                var query = 'action=query&format=json&prop=pageimages|pageterms|pageinfo&generator=prefixsearch&redirects=1&formatversion=2&piprop=thumbnail&pithumbsize=250&pilimit=20&wbptterms=description&gpssearch=' + word + '&gpslimit=20&callback=?';
+                $.getJSON(wikiAPI + query, function(t) {
+
+                    for (var i = 0; i < t.query.pages.length; i++) {
+
+                        if (t.query.pages[i].hasOwnProperty('thumbnail')) {
+                            var contentClass = t.query.pages[i].title.replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g, '');
+                            $('#content').append(
+                                '<a href="#" class="' + contentClass + '" target="blank">' +
+                                '<div class="col-md-3 singleResult">' +
+                                '<div class="info"><h3></h3><p></p></div>' +
+                                '</div>' +
+                                '</a>');
+                            $('.' + contentClass + ' .singleResult').css('background-image', 'url(' + t.query.pages[i].thumbnail.source + ')');
+                            $.getJSON(wikiAPI + 'action=opensearch&format=json&search=' + t.query.pages[i].title + '&callback=?', function(q) {
+
+                                var contCla = q[1][0].replace(/[&\/\\#,+()$~%.'":*?<>{}\s]/g, '');
+                                $('.' + contCla + ' h3').text(q[1][0]);
+                                $('.' + contCla + ' p').text(q[2][0]);
+                                $('.' + contCla).attr('href', q[3][0]);
+
+                            });
+
+                        }
+
+                    }
+
+                });
+            }
+
+        });
+
+    </script>
+</body>
+
+</html>
